@@ -1,0 +1,6 @@
+Number of Classes 2
+positive 0
+negative 1
+Instances for training 150
+Instances for testing 50
+Image Size 60  40
