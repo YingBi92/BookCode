@@ -15,3 +15,6 @@ If you uses the code, please cite the book:  <br />
 	author={Bi, Ying and Xue, Bing and Zhang, Mengjie},
 	year={2021},
 	publisher={Springer International Publishing}}
+	
+The codes have not been carefully checked and rerun after I tidying them up. If you find any problems/bugs or cannot reproduce similar accuracies as the paper, please contact me (Ying.Bi@ecs.vuw.ac.nz). 
+
