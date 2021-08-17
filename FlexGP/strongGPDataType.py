@@ -46,3 +46,7 @@ class Img3:
 class Vector:
     def __init__(ndarray):
         pass
+    
+class Vector1:
+    def __init__(ndarray):
+        pass

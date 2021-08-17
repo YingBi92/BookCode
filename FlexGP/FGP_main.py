@@ -5,7 +5,7 @@ import evalGP_fgp as evalGP
 import gp_restrict as gp_restrict
 import numpy
 from deap import base, creator, tools, gp
-from strongGPDataType import Int1, Int2, Int3, Float1, Float2, Float3, Img, Img1, Vector
+from strongGPDataType import Int1, Int2, Int3, Float1, Float2, Float3, Img, Img1, Vector, Vector1
 import fgp_functions as fe_fs
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import cross_val_score
@@ -21,7 +21,7 @@ y_test = numpy.load(dataSetName + '_test_label.npy')
 
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 # parameters:
-population = 5
+population = 100
 generation = 5
 cxProb = 0.8
 mutProb = 0.19
@@ -31,13 +31,14 @@ initialMinDepth = 2
 initialMaxDepth = 6
 maxDepth = 8
 ##GP
-pset = gp.PrimitiveSetTyped('MAIN', [Img], Vector, prefix='Image')
+pset = gp.PrimitiveSetTyped('MAIN', [Img], Vector1, prefix='Image')
 #feature concatenation
-pset.addPrimitive(fe_fs.root_conVector2, [Img1, Img1], Vector, name='Root2')
-pset.addPrimitive(fe_fs.root_conVector3, [Img1, Img1, Img1], Vector, name='Root3')
-pset.addPrimitive(fe_fs.root_con, [Vector, Vector], Vector, name='Roots2')
-pset.addPrimitive(fe_fs.root_con, [Vector, Vector, Vector], Vector, name='Roots3')
-pset.addPrimitive(fe_fs.root_con, [Vector, Vector, Vector, Vector], Vector, name='Roots4')
+pset.addPrimitive(fe_fs.root_con, [Vector1, Vector1], Vector1, name='Root')
+pset.addPrimitive(fe_fs.root_conVector2, [Img1, Img1], Vector1, name='Root2')
+pset.addPrimitive(fe_fs.root_conVector3, [Img1, Img1, Img1], Vector1, name='Root3')
+pset.addPrimitive(fe_fs.root_con, [Vector, Vector], Vector1, name='Roots2')
+pset.addPrimitive(fe_fs.root_con, [Vector, Vector, Vector], Vector1, name='Roots3')
+pset.addPrimitive(fe_fs.root_con, [Vector, Vector, Vector, Vector], Vector1, name='Roots4')
 ##feature extraction
 pset.addPrimitive(fe_fs.global_hog_small, [Img1], Vector, name='Global_HOG')
 pset.addPrimitive(fe_fs.all_lbp, [Img1], Vector, name='Global_uLBP')
@@ -63,8 +64,8 @@ pset.addPrimitive(fe_fs.minf, [Img1], Img1, name='MinF')
 pset.addPrimitive(fe_fs.maxf, [Img1], Img1, name='MaxF')
 pset.addPrimitive(fe_fs.lbp, [Img1], Img1, name='LBPF')
 pset.addPrimitive(fe_fs.hog_feature, [Img1], Img1, name='HoGF')
-pset.addPrimitive(fe_fs.mixconadd, [Img1, Float3, Img1, Float3], Img1, name='W-AddF')
-pset.addPrimitive(fe_fs.mixconsub, [Img1, Float3, Img1, Float3], Img1, name='W-SubF')
+pset.addPrimitive(fe_fs.mixconadd, [Img1, Float3, Img1, Float3], Img1, name='W_AddF')
+pset.addPrimitive(fe_fs.mixconsub, [Img1, Float3, Img1, Float3], Img1, name='W_SubF')
 pset.addPrimitive(fe_fs.sqrt, [Img1], Img1, name='SqrtF')
 pset.addPrimitive(fe_fs.relu, [Img1], Img1, name='ReLUF')
 # pooling
@@ -83,10 +84,10 @@ pset.addPrimitive(fe_fs.medianf, [Img], Img, name='Med')
 pset.addPrimitive(fe_fs.meanf, [Img], Img, name='Mean')
 pset.addPrimitive(fe_fs.minf, [Img], Img, name='Min')
 pset.addPrimitive(fe_fs.maxf, [Img], Img, name='Max')
-pset.addPrimitive(fe_fs.lbp, [Img], Img, name='LBP-F')
-pset.addPrimitive(fe_fs.hog_feature, [Img], Img, name='HOG-F')
-pset.addPrimitive(fe_fs.mixconadd, [Img, Float3, Img, Float3], Img, name='W-Add')
-pset.addPrimitive(fe_fs.mixconsub, [Img, Float3, Img, Float3], Img, name='W-Sub')
+pset.addPrimitive(fe_fs.lbp, [Img], Img, name='LBP_F')
+pset.addPrimitive(fe_fs.hog_feature, [Img], Img, name='HOG_F')
+pset.addPrimitive(fe_fs.mixconadd, [Img, Float3, Img, Float3], Img, name='W_Add')
+pset.addPrimitive(fe_fs.mixconsub, [Img, Float3, Img, Float3], Img, name='W_Sub')
 pset.addPrimitive(fe_fs.sqrt, [Img], Img, name='Sqrt')
 pset.addPrimitive(fe_fs.relu, [Img], Img, name='ReLU')
 # Terminals
@@ -109,7 +110,7 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 toolbox.register("mapp", map)
 
-def evalTrain(individual):
+def evalTrainb(individual):
     try:
         func = toolbox.compile(expr=individual)
         train_tf = []
@@ -122,6 +123,20 @@ def evalTrain(individual):
         accuracy = round(100 * cross_val_score(lsvm, train_norm, y_train, cv=5).mean(), 2)
     except:
         accuracy = 0
+    return accuracy,
+
+def evalTrain(individual):
+    print(individual)
+    func = toolbox.compile(expr=individual)
+    train_tf = []
+    for i in range(0, len(y_train)):
+        train_tf.append(numpy.asarray(func(x_train[i, :, :])))
+    train_tf = numpy.asarray(train_tf, dtype=float)
+    print(train_tf.shape)
+    min_max_scaler = preprocessing.MinMaxScaler()
+    train_norm = min_max_scaler.fit_transform(train_tf)
+    lsvm = LinearSVC()
+    accuracy = round(100 * cross_val_score(lsvm, train_norm, y_train, cv=5).mean(), 2)
     return accuracy,
 
 # genetic operator
