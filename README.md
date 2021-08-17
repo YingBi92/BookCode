@@ -18,5 +18,5 @@ If you uses the code, please cite the book:  <br />
 	
 The codes have been updated from 17 August 2021. Please refer to these new versions, otherwise you may get lower accuracies.
 ----
-The codes have not been carefully checked and rerun after I tidying them up. If you find any problems/bugs or cannot reproduce similar accuracies as the paper, please contact me (Ying.Bi@ecs.vuw.ac.nz). 
+The codes have not been carefully checked and rerun after I tidying them up. If you find any problems/bugs or cannot reproduce similar accuracies as the paper, feel free to contact me (Ying.Bi@ecs.vuw.ac.nz). 
 
