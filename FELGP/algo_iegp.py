@@ -123,8 +123,8 @@ def eaSimple(population, toolbox, cxpb, mutpb, elitpb, ngen, randomseed, stats=N
     logbook = tools.Logbook()
     logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
     # Evaluate the individuals with an invalid fitness
-    invalid_ind = [ind for ind in population if not ind.fitness.valid]
-    fitnesses = toolbox.mapp(toolbox.evaluate, invalid_ind)
+
+    fitnesses = toolbox.mapp(toolbox.evaluate, population)
     for ind, fit in zip(population, fitnesses):
         ind.fitness.values = fit
 
@@ -169,10 +169,8 @@ def eaSimple(population, toolbox, cxpb, mutpb, elitpb, ngen, randomseed, stats=N
         # Update the hall of fame with the generated
         if halloffame is not None:
             halloffame.update(offspring)
-        cop_po = offspring.copy()
         hof_store.update(offspring)
-        for i in hof_store:
-            cop_po.append(i)
+
         population[:] = offspring
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}

@@ -128,30 +128,21 @@ def conVector(img):
 def FeaCon2(img1, img2):
     x_features = []
     for i in range(img1.shape[0]):
-        image1 = conVector(img1[i, :])
-        image2 = conVector(img2[i, :])
-        feature_vector = numpy.concatenate((image1, image2), axis=0)
+        feature_vector = numpy.concatenate((img1[i, :], img2[i, :]), axis=0)
         x_features.append(feature_vector)
     return numpy.asarray(x_features)
 
 def FeaCon3(img1, img2, img3):
     x_features = []
     for i in range(img1.shape[0]):
-        image1 = conVector(img1[i, :])
-        image2 = conVector(img2[i, :])
-        image3 = conVector(img3[i, :])
-        feature_vector = numpy.concatenate((image1, image2, image3), axis=0)
+        feature_vector = numpy.concatenate((img1[i, :], img2[i, :], img3[i, :]), axis=0)
         x_features.append(feature_vector)
     return numpy.asarray(x_features)
 
 def FeaCon4(img1, img2, img3, img4):
     x_features = []
     for i in range(img1.shape[0]):
-        image1 = conVector(img1[i, :])
-        image2 = conVector(img2[i, :])
-        image3 = conVector(img3[i, :])
-        image4 = conVector(img4[i, :])
-        feature_vector = numpy.concatenate((image1, image2, image3, image4), axis=0)
+        feature_vector = numpy.concatenate((img1[i, :], img2[i, :], img3[i, :], img4[i, :]), axis=0)
         x_features.append(feature_vector)
     return numpy.asarray(x_features)
 
@@ -165,7 +156,7 @@ def all_lbp(image):
         hist,ax=numpy.histogram(lbp,n_bins,[0,59])
         feature.append(hist)
     return numpy.asarray(feature)
-
+#
 def HoGFeatures(image):
     try:
         img,realImage=hog(image,orientations=9, pixels_per_cell=(8, 8),
@@ -174,6 +165,7 @@ def HoGFeatures(image):
         return realImage
     except:
         return image
+
 
 def hog_features_patches(image,patch_size,moving_size):
     img=numpy.asarray(image)
@@ -325,21 +317,20 @@ def hog_feature(image):
     except: data = image
     return data
 
-
 def mis_match(img1,img2):
-    w1,h1=img1.shape
-    w2,h2=img2.shape
+    n, w1,h1=img1.shape
+    n, w2,h2=img2.shape
     w=min(w1,w2)
     h=min(h1,h2)
-    return img1[0:w,0:h],img2[0:w,0:h]
+    return img1[:, 0:w,0:h],img2[:, 0:w,0:h]
 
-def mixconadd(img1, w1,img2, w2):
+def mixconadd(img1, w1, img2, w2):
     img11,img22=mis_match(img1,img2)
-    return numpy.add(img11*w1,img22*w2)
+    return np.asarray(img11*w1+img22*w2)
 
-def mixconsub(img1, w1,img2, w2):
+def mixconsub(img1, w1, img2, w2):
     img11,img22=mis_match(img1,img2)
-    return numpy.subtract(img11*w1,img22*w2)
+    return np.asarray(img11*w1-img22*w2)
 
 def sqrt(left):
     with numpy.errstate(divide='ignore',invalid='ignore'):
@@ -360,4 +351,3 @@ def maxP(left, kel1, kel2):
         current = skimage.measure.block_reduce(left[i,:,:], (kel1,kel2),numpy.max)
         img.append(current)
     return np.asarray(img)
-

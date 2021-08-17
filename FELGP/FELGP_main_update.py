@@ -1,4 +1,5 @@
 #python packages
+import operator
 import random
 import time
 import gp_restrict as gp_restrict
@@ -8,7 +9,7 @@ from deap import base, creator, tools, gp
 import felgp_functions as felgp_fs
 from strongGPDataType import Int1, Int2, Int3, Int4, Int5, Int6
 from strongGPDataType import Float1, Float2, Float3
-from strongGPDataType import Array1, Array2, Array3, Array4, Array5
+from strongGPDataType import Array1, Array2, Array3, Array4, Array5, Array6
 # defined by author
 
 randomSeeds = 12
@@ -24,7 +25,7 @@ print(x_train.shape,y_train.shape, x_test.shape,y_test.shape)
 #parameters:
 num_train = x_train.shape[0]
 pop_size=100
-generation=5
+generation=50
 cxProb=0.8
 mutProb=0.19
 elitismProb=0.01
@@ -34,22 +35,22 @@ initialMaxDepth=8
 maxDepth=8
 
 ##GP
-pset = gp.PrimitiveSetTyped('MAIN', [Array1, Array2], Array5, prefix = 'Image')
+pset = gp.PrimitiveSetTyped('MAIN', [Array1, Array2], Array6, prefix = 'Image')
 # Combination, use 'Combine' for increasing the depth of the GP tree
-pset.addPrimitive(felgp_fs.combine, [Array5, Array5, Array5], Array5, name='Combine')
-pset.addPrimitive(felgp_fs.combine, [Array4, Array4, Array4], Array5, name='Combine3')
-pset.addPrimitive(felgp_fs.combine, [Array4, Array4, Array4, Array4, Array5], Array5, name='Combine5')
-pset.addPrimitive(felgp_fs.combine, [Array4, Array4, Array4, Array4, Array4, Array4, Array4], Array5, name='Combine7')
+pset.addPrimitive(felgp_fs.combine, [Array6, Array6, Array6], Array6, name='Combine')
+pset.addPrimitive(felgp_fs.combine, [Array5, Array5, Array5], Array6, name='Combine3')
+pset.addPrimitive(felgp_fs.combine, [Array5, Array5, Array5, Array5, Array5], Array6, name='Combine5')
+pset.addPrimitive(felgp_fs.combine, [Array5, Array5, Array5, Array5, Array5, Array5, Array5], Array6, name='Combine7')
 #Classification
-pset.addPrimitive(felgp_fs.linear_svm, [Array3, Array2, Int4], Array4, name='SVM')
-pset.addPrimitive(felgp_fs.lr, [Array3, Array2, Int4], Array4, name='LR')
-pset.addPrimitive(felgp_fs.randomforest, [Array3, Array2, Int5, Int6], Array4, name='RF')
-pset.addPrimitive(felgp_fs.erandomforest, [Array3, Array2, Int5, Int6], Array4, name='ERF')
+pset.addPrimitive(felgp_fs.linear_svm, [Array4, Array2, Int4], Array5, name='SVM')
+pset.addPrimitive(felgp_fs.lr, [Array4, Array2, Int4], Array5, name='LR')
+pset.addPrimitive(felgp_fs.randomforest, [Array4, Array2, Int5, Int6], Array5, name='RF')
+pset.addPrimitive(felgp_fs.erandomforest, [Array4, Array2, Int5, Int6], Array5, name='ERF')
 ###Feature Concatenation
-
-pset.addPrimitive(felgp_fs.FeaCon2, [Array3, Array3], Array3, name ='FeaCon2')
-pset.addPrimitive(felgp_fs.FeaCon3, [Array3, Array3, Array3], Array3, name ='FeaCon3')
-pset.addPrimitive(felgp_fs.FeaCon4, [Array3, Array3, Array3, Array3], Array3, name ='FeaCon4')
+pset.addPrimitive(felgp_fs.FeaCon2, [Array4, Array4], Array4, name ='FeaCon')
+pset.addPrimitive(felgp_fs.FeaCon2, [Array3, Array3], Array4, name ='FeaCon2')
+pset.addPrimitive(felgp_fs.FeaCon3, [Array3, Array3, Array3], Array4, name ='FeaCon3')
+pset.addPrimitive(felgp_fs.FeaCon4, [Array3, Array3, Array3, Array3], Array4, name ='FeaCon4')
 #Feature Extraction
 pset.addPrimitive(felgp_fs.global_hog_small, [Array1], Array3, name = 'F_HOG')
 pset.addPrimitive(felgp_fs.all_lbp, [Array1], Array3, name = 'F_uLBP')
@@ -72,7 +73,7 @@ pset.addPrimitive(felgp_fs.maxf, [Array1], Array1,name='Max')
 pset.addPrimitive(felgp_fs.minf, [Array1], Array1,name='Min')
 pset.addPrimitive(felgp_fs.meanf, [Array1], Array1,name='Mean')
 pset.addPrimitive(felgp_fs.sqrt, [Array1], Array1, name='Sqrt')
-pset.addPrimitive(felgp_fs.mixconadd, [Array1, Float3, Array1, Float3], Array1, name='W_add')
+pset.addPrimitive(felgp_fs.mixconadd, [Array1, Float3, Array1, Float3], Array1, name='W_Add')
 pset.addPrimitive(felgp_fs.mixconsub, [Array1, Float3, Array1, Float3], Array1, name='W_Sub')
 pset.addPrimitive(felgp_fs.relu, [Array1], Array1, name='Relu')
 #Terminals
@@ -97,7 +98,7 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 toolbox.register("mapp", map)
 
-def evalTrain(individual):
+def evalTrainb(individual):
     try:
         func = toolbox.compile(expr=individual)
         output = np.asarray(func(x_train, y_train))
@@ -107,6 +108,13 @@ def evalTrain(individual):
         accuracy = 0
     return accuracy,
 
+def evalTrain(individual):
+    # print(individual)
+    func = toolbox.compile(expr=individual)
+    output = np.asarray(func(x_train, y_train))
+    y_predict  = np.argmax(output, axis=1)
+    accuracy = 100*np.sum(y_predict == y_train) / len(y_train)
+    return accuracy,
 
 toolbox.register("evaluate", evalTrain)
 toolbox.register("select", tools.selTournament,tournsize=7)
@@ -115,10 +123,11 @@ toolbox.register("mate", gp.cxOnePoint)
 toolbox.register("expr_mut", gp_restrict.genFull, min_=0, max_=2)
 toolbox.register("mutate_eph", gp.mutEphemeral, mode='all')
 toolbox.register("mutate", gp.mutUniform, expr=toolbox.expr_mut, pset=pset)
-#toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=maxDepth))
-#toolbox.decorate("mutate", gp.staticLimit(key=operator.attrgetter("height"), max_value=maxDepth))
+toolbox.decorate("mate", gp.staticLimit(key=operator.attrgetter("height"), max_value=maxDepth))
+toolbox.decorate("mutate", gp.staticLimit(key=operator.attrgetter("height"), max_value=maxDepth))
 
 def GPMain(randomSeeds):
+
     random.seed(randomSeeds)
    
     pop = toolbox.population(pop_size)

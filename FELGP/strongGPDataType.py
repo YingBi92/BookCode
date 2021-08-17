@@ -54,3 +54,7 @@ class Array4:
 class Array5:
     def __init__(ndarray):
         pass
+    
+class Array6:
+    def __init__(ndarray):
+        pass
