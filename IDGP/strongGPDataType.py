@@ -10,7 +10,11 @@ class Region:
 class Vector:
     def __init__(array):
         pass
-
+    
+class Vector1:
+    def __init__(array):
+        pass
+    
 class Int1:
     def __init__(int):
         pass

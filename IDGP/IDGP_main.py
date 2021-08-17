@@ -8,7 +8,7 @@ import gp_restrict
 import numpy as np
 # deap package
 from deap import base, creator, tools, gp
-from strongGPDataType import Int1, Int2, Int3, Img, Region, Vector
+from strongGPDataType import Int1, Int2, Int3, Img, Region, Vector, Vector1
 import feature_function as fe_fs
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import cross_val_score
@@ -42,8 +42,9 @@ bound1, bound2 = x_train[1, :, :].shape
 
 pset = gp.PrimitiveSetTyped('MAIN', [Img], Vector, prefix='Image')
 #Feature concatenation
-pset.addPrimitive(fe_fs.root_con, [Vector, Vector], Vector, name='FeaCon2')
-pset.addPrimitive(fe_fs.root_con, [Vector, Vector, Vector], Vector, name='FeaCon3')
+pset.addPrimitive(fe_fs.root_con, [Vector1, Vector1], Vector1, name='FeaCon')
+pset.addPrimitive(fe_fs.root_con, [Vector, Vector], Vector1, name='FeaCon2')
+pset.addPrimitive(fe_fs.root_con, [Vector, Vector, Vector], Vector1, name='FeaCon3')
 # Global feature extraction
 pset.addPrimitive(fe_fs.all_dif, [Img], Vector, name='Global_DIF')
 pset.addPrimitive(fe_fs.all_histogram, [Img], Vector, name='Global_Histogram')
