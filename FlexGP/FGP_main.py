@@ -110,7 +110,7 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 toolbox.register("mapp", map)
 
-def evalTrainb(individual):
+def evalTrain(individual):
     try:
         func = toolbox.compile(expr=individual)
         train_tf = []
@@ -125,7 +125,7 @@ def evalTrainb(individual):
         accuracy = 0
     return accuracy,
 
-def evalTrain(individual):
+def evalTrainb(individual):
     print(individual)
     func = toolbox.compile(expr=individual)
     train_tf = []
