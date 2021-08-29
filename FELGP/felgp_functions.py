@@ -12,7 +12,6 @@ from sklearn.ensemble import RandomForestClassifier, ExtraTreesClassifier
 from sklearn import preprocessing
 from sklearn.model_selection import StratifiedKFold
 from sklearn.linear_model import LogisticRegression
-import logging
 
 
 def combine(*args):
@@ -21,6 +20,49 @@ def combine(*args):
         output += args[i]
     #print(output.shape)
     return output
+
+def linear_svm(x_train, y_train, cm=0):
+    #parameters c
+    c = 10**(cm)
+    #print(x_train.shape, y_train.shape, num_train, x_train[0:num_train,:].shape, x_train[num_train:-1,:].shape)
+    classifier = LinearSVC(C=c)
+    num_train = y_train.shape[0]
+    if num_train == x_train.shape[0]:
+        y_labels = svm_train_model(classifier, x_train, y_train)
+    else:
+        y_labels = test_function_svm(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
+    return y_labels
+
+def lr(x_train, y_train, cm=0):
+    c = 10**(cm)
+    #print(x_train.shape, y_train.shape, num_train, x_train[0:num_train,:].shape, x_train[num_train:-1,:].shape)
+    classifier = LogisticRegression(C=c, solver='sag', multi_class= 'auto', max_iter=1000)
+    num_train = y_train.shape[0]
+    if num_train==x_train.shape[0]:
+        y_labels = svm_train_model(classifier, x_train, y_train)
+    else:
+        y_labels = test_function_svm(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
+    return y_labels
+
+def randomforest(x_train, y_train, n_tree = 500, max_dep = 100):
+    #print(x_train.shape, y_train.shape, num_train, x_train[0:num_train,:].shape, x_train[num_train:-1,:].shape)
+    classifier = RandomForestClassifier(n_estimators=n_tree, max_depth=max_dep)
+    num_train = y_train.shape[0]
+    if num_train == x_train.shape[0]:
+        y_labels = train_model_prob(classifier, x_train, y_train)
+    else:
+        y_labels = test_function_prob(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
+    return y_labels
+
+def erandomforest(x_train, y_train, n_tree = 500, max_dep = 100):
+    #print(x_train.shape, y_train.shape, num_train, x_train[0:num_train,:].shape, x_train[num_train:-1,:].shape)
+    classifier = ExtraTreesClassifier(n_estimators=n_tree, max_depth=max_dep)
+    num_train = y_train.shape[0]
+    if num_train == x_train.shape[0]:
+        y_labels = train_model_prob(classifier, x_train, y_train)
+    else:
+        y_labels = test_function_prob(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
+    return y_labels
 
 def svm_train_model(model, x, y, k=3):
     min_max_scaler = preprocessing.MinMaxScaler()
@@ -46,8 +88,6 @@ def test_function_svm(model, x_train, y_train, x_test):
     min_max_scaler = preprocessing.MinMaxScaler()
     x_train = min_max_scaler.fit_transform(np.asarray(x_train))
     x_test = min_max_scaler.transform(np.asarray(x_test))
-    logging.info('Training set shape in testing '+str(x_train.shape))
-    logging.info('Test set shape in testing'+str(x_test.shape))
     model.fit(x_train, y_train)
     y_pred = model.predict(x_test)
     y_label = []
@@ -61,6 +101,8 @@ def test_function_svm(model, x_train, y_train, x_test):
     return y_predict
 
 def train_model_prob(model, x, y, k=3):
+##    min_max_scaler = preprocessing.MinMaxScaler()
+##    x = min_max_scaler.fit_transform(np.asarray(x))
     kf = StratifiedKFold(n_splits=k)
     ni = np.unique(y)
     num_class = ni.shape[0]
@@ -73,89 +115,66 @@ def train_model_prob(model, x, y, k=3):
     return y_predict
 
 def test_function_prob(model, x_train, y_train, x_test):
-    logging.info('Training set shape in testing '+str(x_train.shape))
-    logging.info('Test set shape in testing'+str(x_test.shape))
+    ##min_max_scaler = preprocessing.MinMaxScaler()
+    #x_train = min_max_scaler.fit_transform(np.asarray(x_train))
+    #x_test = min_max_scaler.transform(np.asarray(x_test))
     model.fit(x_train, y_train)
     y_pred = model.predict_proba(x_test)
     return y_pred
 
-def linear_svm(x_train, y_train, cm=0):
-    #parameters c
-    c = 10**(cm)
-    classifier = LinearSVC(C=c)
-    num_train = y_train.shape[0]
-    if num_train == x_train.shape[0]:
-        y_labels = svm_train_model(classifier, x_train, y_train)
-    else:
-        y_labels = test_function_svm(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
-    return y_labels
-
-def lr(x_train, y_train, cm=0):
-    c = 10**(cm)
-    classifier = LogisticRegression(C=c, solver='sag', multi_class= 'auto', max_iter=1000)
-    num_train = y_train.shape[0]
-    if num_train==x_train.shape[0]:
-        y_labels = svm_train_model(classifier, x_train, y_train)
-    else:
-        y_labels = test_function_svm(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
-    return y_labels
-
-def randomforest(x_train, y_train, n_tree = 500, max_dep = 100):
-    classifier = RandomForestClassifier(n_estimators=n_tree, max_depth=max_dep)
-    num_train = y_train.shape[0]
-    if num_train == x_train.shape[0]:
-        y_labels = train_model_prob(classifier, x_train, y_train)
-    else:
-        y_labels = test_function_prob(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
-    return y_labels
-
-def erandomforest(x_train, y_train, n_tree = 500, max_dep = 100):
-    classifier = ExtraTreesClassifier(n_estimators=n_tree, max_depth=max_dep)
-    num_train = y_train.shape[0]
-    if num_train == x_train.shape[0]:
-        y_labels = train_model_prob(classifier, x_train, y_train)
-    else:
-        y_labels = test_function_prob(classifier, x_train[0:num_train,:], y_train, x_train[num_train:x_train.shape[0],:])
-    return y_labels
-
 def conVector(img):
     try:
         img_vector=numpy.concatenate((img))
-    except ValueError:
+    except:
         img_vector=img
     return img_vector
 
 def FeaCon2(img1, img2):
     x_features = []
     for i in range(img1.shape[0]):
-        feature_vector = numpy.concatenate((img1[i, :], img2[i, :]), axis=0)
+        image1 = conVector(img1[i, :])
+        image2 = conVector(img2[i, :])
+        feature_vector = numpy.concatenate((image1, image2), axis=0)
         x_features.append(feature_vector)
     return numpy.asarray(x_features)
 
 def FeaCon3(img1, img2, img3):
     x_features = []
     for i in range(img1.shape[0]):
-        feature_vector = numpy.concatenate((img1[i, :], img2[i, :], img3[i, :]), axis=0)
+        image1 = conVector(img1[i, :])
+        image2 = conVector(img2[i, :])
+        image3 = conVector(img3[i, :])
+        feature_vector = numpy.concatenate((image1, image2, image3), axis=0)
         x_features.append(feature_vector)
     return numpy.asarray(x_features)
+
 
 def FeaCon4(img1, img2, img3, img4):
     x_features = []
     for i in range(img1.shape[0]):
-        feature_vector = numpy.concatenate((img1[i, :], img2[i, :], img3[i, :], img4[i, :]), axis=0)
+        image1 = conVector(img1[i, :])
+        image2 = conVector(img2[i, :])
+        image3 = conVector(img3[i, :])
+        image4 = conVector(img4[i, :])
+        feature_vector = numpy.concatenate((image1, image2, image3, image4), axis=0)
         x_features.append(feature_vector)
     return numpy.asarray(x_features)
 
+def histLBP(image,radius,n_points):
+    # 'uniform','default','ror','var'
+    lbp = local_binary_pattern(image, n_points, radius, method='nri_uniform')
+    n_bins = 59
+    hist,ax=numpy.histogram(lbp,n_bins,[0,59])
+    return hist
+
 def all_lbp(image):
-    #uniform_LBP
     # global and local
     feature = []
-    n_bins = 59
     for i in range(image.shape[0]):
-        lbp = local_binary_pattern(image[i, :, :], P=8, R=1.5, method='nri_uniform')
-        hist,ax=numpy.histogram(lbp,n_bins,[0,59])
-        feature.append(hist)
+        feature_vector = histLBP(image[i,:,:], radius=1.5, n_points=8)
+        feature.append(feature_vector)
     return numpy.asarray(feature)
+
 #
 def HoGFeatures(image):
     try:
@@ -199,11 +218,11 @@ def all_sift(image):
         extractor = sift_features.SingleSiftExtractor(min_length)
         feaArrSingle = extractor.process_image(img[0:min_length, 0:min_length])
         # dimension 128 for all images
-        # print(feaArrSingle.shape)
         w, h = feaArrSingle.shape
         feature_vector = numpy.reshape(feaArrSingle, (h,))
         feature.append(feature_vector)
     return numpy.asarray(feature)
+
 
 def gau(left, si):
     img = []
@@ -226,25 +245,16 @@ def gab(left,the,fre):
     for i in range(left.shape[0]):
         filt_real,filt_imag=numpy.asarray(gabor(left[i,:,:],theta=thea,frequency=freq))
         img.append(filt_real)
-    return np.asarray(img)
-
-def laplace(left):
-    img = []
-    for i in range(left.shape[0]):
-        img.append(ndimage.laplace(left[i, :, :]))
-    return np.asarray(img)
+    return numpy.asarray(img)
 
 def gaussian_Laplace1(left):
-    img = []
-    for i in range(left.shape[0]):
-        img.append(ndimage.gaussian_laplace(left[i, :, :], sigma=1))
-    return np.asarray(img)
+    return ndimage.gaussian_laplace(left,sigma=1)
 
 def gaussian_Laplace2(left):
-    img = []
-    for i in range(left.shape[0]):
-        img.append(ndimage.gaussian_laplace(left[i, :, :], sigma=2))
-    return np.asarray(img)
+    return ndimage.gaussian_laplace(left,sigma=2)
+
+def laplace(left):
+    return ndimage.laplace(left)
 
 def sobelxy(left):
     img = []
@@ -310,7 +320,7 @@ def hog_feature(image):
         img = []
         for i in range(image.shape[0]):
             img1, realImage = hog(image[i, :, :], orientations=9, pixels_per_cell=(8, 8),
-                                cells_per_block=(3, 3), block_norm='L2-Hys', visualise=True,
+                                cells_per_block=(3, 3), block_norm='L2-Hys', visualize=True,
                                 transform_sqrt=False, feature_vector=True)
             img.append(realImage)
         data = np.asarray(img)
@@ -326,11 +336,11 @@ def mis_match(img1,img2):
 
 def mixconadd(img1, w1, img2, w2):
     img11,img22=mis_match(img1,img2)
-    return np.asarray(img11*w1+img22*w2)
+    return numpy.add(img11*w1,img22*w2)
 
 def mixconsub(img1, w1, img2, w2):
     img11,img22=mis_match(img1,img2)
-    return np.asarray(img11*w1-img22*w2)
+    return numpy.subtract(img11*w1,img22*w2)
 
 def sqrt(left):
     with numpy.errstate(divide='ignore',invalid='ignore'):

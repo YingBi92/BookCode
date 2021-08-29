@@ -123,15 +123,17 @@ def eaSimple(population, toolbox, cxpb, mutpb, elitpb, ngen, randomseed, stats=N
     logbook = tools.Logbook()
     logbook.header = ['gen', 'nevals'] + (stats.fields if stats else [])
     # Evaluate the individuals with an invalid fitness
+    # invalid_ind = [ind for ind in population if not ind.fitness.valid]
+    # print(len(invalid_ind))
 
-    fitnesses = toolbox.mapp(toolbox.evaluate, population)
-    for ind, fit in zip(population, fitnesses):
-        ind.fitness.values = fit
+    for i in population:
+        i.fitness.values = toolbox.evaluate(individual=i, hof=[])
 
     if halloffame is not None:
         halloffame.update(population)
     hof_store = tools.HallOfFame(5 * len(population))
     hof_store.update(population)
+    cop_po = population
     record = stats.compile(population) if stats else {}
     logbook.record(gen=0, nevals=len(population), **record)
     if verbose:
@@ -139,42 +141,40 @@ def eaSimple(population, toolbox, cxpb, mutpb, elitpb, ngen, randomseed, stats=N
 
     for gen in range(1, ngen + 1):
 
-        #Select the next generation individuals by elitism
-        elitismNum=int(elitpb * len(population))
-        population_for_eli=[toolbox.clone(ind) for ind in population]
+        # Select the next generation individuals by elitism
+        elitismNum = int(elitpb * len(population))
+        population_for_eli = [toolbox.clone(ind) for ind in population]
         offspringE = toolbox.selectElitism(population_for_eli, k=elitismNum)
+
         # Select the next generation individuals for crossover and mutation
-        offspring = toolbox.select(population, len(population)-elitismNum)
+        offspring = toolbox.select(population, len(population) - elitismNum)
         # Vary the pool of individuals
         offspring = varAnd(offspring, toolbox, cxpb, mutpb)
         # add offspring from elitism into current offspring
         # generate the next generation individuals
-            
-        # Evaluate the individuals with an invalid fitness
-        for i in offspring:
-            ind = 0
-            while ind<len(hof_store):
-                if i == hof_store[ind]:
-                    i.fitness.values = hof_store[ind].fitness.values
-                    ind = len(hof_store)
-                else:
-                    ind+=1
-        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
-        fitnesses = toolbox.mapp(toolbox.evaluate, invalid_ind)
-        for ind, fit in zip(invalid_ind, fitnesses):
-            ind.fitness.values = fit
 
-        offspring[0:0]=offspringE
-            
+        # Evaluate the individuals with an invalid fitness
+        invalid_ind = [ind for ind in offspring if not ind.fitness.valid]
+        # print(len(invalid_ind))
+        for i in invalid_ind:
+            i.fitness.values = toolbox.evaluate(individual=i, hof=cop_po)
+
+        offspring[0:0] = offspringE
+
         # Update the hall of fame with the generated
         if halloffame is not None:
             halloffame.update(offspring)
+        cop_po = offspring.copy()
         hof_store.update(offspring)
-
+        for i in hof_store:
+            cop_po.append(i)
         population[:] = offspring
         # Append the current generation statistics to the logbook
         record = stats.compile(population) if stats else {}
+        # print(record)
         logbook.record(gen=gen, nevals=len(offspring), **record)
+        # print(record)
         if verbose:
             print(logbook.stream)
     return population, logbook
+

@@ -11,17 +11,26 @@ from strongGPDataType import Int1, Int2, Int3, Int4, Int5, Int6
 from strongGPDataType import Float1, Float2, Float3
 from strongGPDataType import Array1, Array2, Array3, Array4, Array5, Array6
 # defined by author
+import saveFile
+import sys
 
-randomSeeds = 12
-dataSetName = 'f1'
+# randomSeeds = 12
+# dataSetName = 'f1'
+dataSetName = str(sys.argv[1])
+randomSeeds = str(sys.argv[2])
 
-x_train = np.load(dataSetName+'_train_data.npy')/255.0
-y_train = np.load(dataSetName+'_train_label.npy')
-x_test = np.load(dataSetName+'_test_data.npy')/255.0
-y_test = np.load(dataSetName+'_test_label.npy')
+x_train = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_train_data.npy')/255.0
+y_train = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_train_label.npy')
+x_test = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_test_data.npy')/255.0
+y_test = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_test_label.npy')
+
+# x_train = np.load('../'+dataSetName+'_train_data.npy')/255.0
+# y_train = np.load('../'+dataSetName+'_train_label.npy')
+# x_test = np.load('../'+dataSetName+'_test_data.npy')/255.0
+# y_test = np.load('../'+dataSetName+'_test_label.npy')
 
 print(x_train.shape,y_train.shape, x_test.shape,y_test.shape)
-
+print(x_train.max())
 #parameters:
 num_train = x_train.shape[0]
 pop_size=100
@@ -98,25 +107,27 @@ toolbox.register("population", tools.initRepeat, list, toolbox.individual)
 toolbox.register("compile", gp.compile, pset=pset)
 toolbox.register("mapp", map)
 
-def evalTrainb(individual):
-    try:
-        func = toolbox.compile(expr=individual)
-        output = np.asarray(func(x_train, y_train))
-        y_predict  = np.argmax(output, axis=1)
-        accuracy = 100*np.sum(y_predict == y_train) / len(y_train)
-    except:
-        accuracy = 0
+
+def evalTrain(toolbox, individual, hof, trainData, trainLabel):
+    if len(hof) != 0 and individual in hof:
+        ind = 0
+        while ind < len(hof):
+            if individual == hof[ind]:
+                accuracy, = hof[ind].fitness.values
+                ind = len(hof)
+            else: ind+=1
+    else:
+        try:
+            func = toolbox.compile(expr=individual)
+            output = np.asarray(func(trainData, trainLabel))
+            y_predict  = np.argmax(output, axis=1)
+            accuracy = 100*np.sum(y_predict == trainLabel) / len(trainLabel)
+        except:
+            accuracy=0
     return accuracy,
 
-def evalTrain(individual):
-    # print(individual)
-    func = toolbox.compile(expr=individual)
-    output = np.asarray(func(x_train, y_train))
-    y_predict  = np.argmax(output, axis=1)
-    accuracy = 100*np.sum(y_predict == y_train) / len(y_train)
-    return accuracy,
 
-toolbox.register("evaluate", evalTrain)
+toolbox.register("evaluate", evalTrain,toolbox, trainData=x_train,trainLabel=y_train)
 toolbox.register("select", tools.selTournament,tournsize=7)
 toolbox.register("selectElitism", tools.selBest)
 toolbox.register("mate", gp.cxOnePoint)
@@ -163,6 +174,7 @@ if __name__ == "__main__":
     trainTime = endTime - beginTime
 
     testResults = evalTest(toolbox, hof[0], x_train, y_train,x_test, y_test)
+    saveFile.saveAllResults(randomSeeds, dataSetName, hof, trainTime, testResults, log)
 
     testTime = time.process_time() - endTime
     print('testResults ', testResults)
