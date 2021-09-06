@@ -10,19 +10,23 @@ import fgp_functions as fe_fs
 from sklearn.svm import LinearSVC
 from sklearn.model_selection import cross_val_score
 from sklearn import preprocessing
+import saveFile
+import sys
 
-randomSeeds = 12
-dataSetName = 'f1'
+# randomSeeds = 12
+# dataSetName = 'f1'
+dataSetName = str(sys.argv[1])
+randomSeeds = str(sys.argv[2])
 
-x_train = numpy.load(dataSetName + '_train_data.npy') / 255.0
-y_train = numpy.load(dataSetName + '_train_label.npy')
-x_test = numpy.load(dataSetName + '_test_data.npy') / 255.0
-y_test = numpy.load(dataSetName + '_test_label.npy')
+x_train = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_train_data.npy') / 255.0
+y_train = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_train_label.npy')
+x_test = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_test_data.npy') / 255.0
+y_test = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_test_label.npy')
 
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 # parameters:
-population = 100
-generation = 5
+population = 500
+generation = 50
 cxProb = 0.8
 mutProb = 0.19
 elitismProb = 0.01
@@ -197,6 +201,7 @@ if __name__ == "__main__":
 
     train_tf, test_tf, trainLabel, testL, testResults = evalTest(toolbox, hof[0], x_train, y_train, x_test, y_test)
     testTime = time.process_time() - endTime
+    saveFile.saveAllResults(randomSeeds, dataSetName, hof, trainTime, testResults, log)
 
     print(testResults)
     print(train_tf.shape, test_tf.shape)
