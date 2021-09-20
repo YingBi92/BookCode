@@ -14,20 +14,14 @@ from strongGPDataType import Array1, Array2, Array3, Array4, Array5, Array6
 import saveFile
 import sys
 
-# randomSeeds = 12
-# dataSetName = 'f1'
-dataSetName = str(sys.argv[1])
-randomSeeds = str(sys.argv[2])
+randomSeeds = 12
+dataSetName = 'f1'
 
-x_train = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_train_data.npy')/255.0
-y_train = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_train_label.npy')
-x_test = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_test_data.npy')/255.0
-y_test = np.load('/nesi/nobackup/nesi00416/iegp_code/'+dataSetName+'_test_label.npy')
 
-# x_train = np.load('../'+dataSetName+'_train_data.npy')/255.0
-# y_train = np.load('../'+dataSetName+'_train_label.npy')
-# x_test = np.load('../'+dataSetName+'_test_data.npy')/255.0
-# y_test = np.load('../'+dataSetName+'_test_label.npy')
+x_train = np.load('../'+dataSetName+'_train_data.npy')/255.0
+y_train = np.load('../'+dataSetName+'_train_label.npy')
+x_test = np.load('../'+dataSetName+'_test_data.npy')/255.0
+y_test = np.load('../'+dataSetName+'_test_label.npy')
 
 print(x_train.shape,y_train.shape, x_test.shape,y_test.shape)
 print(x_train.max())
