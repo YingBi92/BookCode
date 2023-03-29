@@ -13,15 +13,14 @@ from sklearn import preprocessing
 import saveFile
 import sys
 
-# randomSeeds = 12
-# dataSetName = 'f1'
-dataSetName = str(sys.argv[1])
-randomSeeds = str(sys.argv[2])
+randomSeeds = 12
+dataSetName = 'f1'
 
-x_train = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_train_data.npy') / 255.0
-y_train = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_train_label.npy')
-x_test = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_test_data.npy') / 255.0
-y_test = numpy.load('/nesi/nobackup/nesi00416/iegp_code/FlexGP/'+dataSetName + '_test_label.npy')
+
+x_train = numpy.load(dataSetName + '_train_data.npy') / 255.0
+y_train = numpy.load(dataSetName + '_train_label.npy')
+x_test = numpy.load(dataSetName + '_test_data.npy') / 255.0
+y_test = numpy.load(dataSetName + '_test_label.npy')
 
 print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 # parameters:
@@ -127,20 +126,6 @@ def evalTrain(individual):
         accuracy = round(100 * cross_val_score(lsvm, train_norm, y_train, cv=5).mean(), 2)
     except:
         accuracy = 0
-    return accuracy,
-
-def evalTrainb(individual):
-    print(individual)
-    func = toolbox.compile(expr=individual)
-    train_tf = []
-    for i in range(0, len(y_train)):
-        train_tf.append(numpy.asarray(func(x_train[i, :, :])))
-    train_tf = numpy.asarray(train_tf, dtype=float)
-    print(train_tf.shape)
-    min_max_scaler = preprocessing.MinMaxScaler()
-    train_norm = min_max_scaler.fit_transform(train_tf)
-    lsvm = LinearSVC()
-    accuracy = round(100 * cross_val_score(lsvm, train_norm, y_train, cv=5).mean(), 2)
     return accuracy,
 
 # genetic operator
