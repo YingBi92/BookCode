@@ -40,7 +40,7 @@ maxDepth = 8
 bound1, bound2 = x_train[1, :, :].shape
 ##GP
 
-pset = gp.PrimitiveSetTyped('MAIN', [Img], Vector, prefix='Image')
+pset = gp.PrimitiveSetTyped('MAIN', [Img], Vector1, prefix='Image')
 #Feature concatenation
 pset.addPrimitive(fe_fs.root_con, [Vector1, Vector1], Vector1, name='FeaCon')
 pset.addPrimitive(fe_fs.root_con, [Vector, Vector], Vector1, name='FeaCon2')
@@ -88,20 +88,6 @@ def evalTrain(individual):
     # print(train_norm.shape)
     lsvm = LinearSVC(max_iter=100)
     accuracy = round(100 * cross_val_score(lsvm, train_norm, y_train, cv=3).mean(), 2)
-    return accuracy,
-
-def evalTrainb(individual):
-    try:
-        func = toolbox.compile(expr=individual)
-        train_tf = []
-        for i in range(0, len(y_train)):
-            train_tf.append(np.asarray(func(x_train[i, :, :])))
-        min_max_scaler = preprocessing.MinMaxScaler()
-        train_norm = min_max_scaler.fit_transform(np.asarray(train_tf))
-        lsvm = LinearSVC(max_iter=100)
-        accuracy = round(100 * cross_val_score(lsvm, train_norm, y_train, cv=3).mean(), 2)
-    except:
-        accuracy = 0
     return accuracy,
 
 # genetic operator
